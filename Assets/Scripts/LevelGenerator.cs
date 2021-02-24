@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,7 +21,7 @@ public class LevelGenerator : MonoBehaviour
 
     [Header("Genetic Algorithm")]
     public string m_Filename = "exp";
-    [Range(20, 500)]
+    [Range(20, 1000)]
     public int m_PopulationSize = 50;
     [Range(100, 300)]
     public int m_ChromosomeLength = 200;
@@ -32,13 +31,13 @@ public class LevelGenerator : MonoBehaviour
     public float m_ElitismRate = 0.1f;
     [Range(0.0f, 1.0f)]
     public float m_MutateRate = 0.01f;
-    [Range(10, 1000)]
+    [Range(10, 10000)]
     public int m_MaxGeneration = 100;
 
     [Header("Debug")]
     public BuildLevelType m_BuildLevelType = BuildLevelType.All;
     public float m_BuildLevelWaitTime = 2.0f;
-    public enum BuildLevelType { None, First, All };
+    public enum BuildLevelType { None, First, Best, All };
     public Text m_AreaText;
 
     private int m_Generation = 1;
@@ -54,13 +53,14 @@ public class LevelGenerator : MonoBehaviour
         m_AreaText.text = "";
         m_AreaText.text += $"Generation: {m_Generation} / {m_MaxGeneration}\n";
         m_AreaText.text += $"Chromosome: {m_CurrentChromosome} / {m_PopulationSize}\n";
-        m_AreaText.text += $"Average Fitness [{m_Generation - 1}]: {m_AvgFitness:0.0}\n";
-        m_AreaText.text += $"Best Fitness [{m_Generation - 1}]: {m_MaxFitness:0.0}\n";
+        m_AreaText.text += $"Average Fitness [{m_Generation}]: {m_AvgFitness:0.0}\n";
+        m_AreaText.text += $"Best Fitness [{m_Generation}]: {m_MaxFitness:0.0}\n";
         m_AreaText.text += $"Elapsed Time: {Time.unscaledTime:0}";
     }
 
     private void Start()
     {
+        Directory.CreateDirectory($"{Application.dataPath}/../Save");
         InitRandomPopulation();
         StartCoroutine(Loop());
     }
@@ -92,6 +92,13 @@ public class LevelGenerator : MonoBehaviour
                 {
                     DestroyLevel();
                     BuildLevel(chromosome);
+                    yield return new WaitForSeconds(m_BuildLevelWaitTime);
+                } 
+                else if (m_BuildLevelType == BuildLevelType.Best && m_CurrentChromosome == m_PopulationSize - 1)
+                {
+                    DestroyLevel();
+                    m_Population.Sort();
+                    BuildLevel(m_Population[0]);
                     yield return new WaitForSeconds(m_BuildLevelWaitTime);
                 }
 
@@ -125,9 +132,8 @@ public class LevelGenerator : MonoBehaviour
         float fitness = 0.0f;
         string sentence = chromosome.ToString();
         foreach (Pattern pattern in m_Patterns)
-        {
              fitness += Regex.Matches(sentence, pattern.expression).Count * pattern.score;
-        }
+        
         return fitness;
     }
 
@@ -137,7 +143,7 @@ public class LevelGenerator : MonoBehaviour
         for (int i = 0; i < m_TournamentSize; i++)
         {
             int index = Helper.RandomInt(m_PopulationSize);
-            candidates.Add((Chromosome)m_Population[index].Clone());
+            candidates.Add(m_Population[index]);
         }
 
         candidates.Sort();
@@ -151,10 +157,7 @@ public class LevelGenerator : MonoBehaviour
 
         var chromosomes = new List<Chromosome>();
         for (int i = 0; i < count; i++)
-        {
-            Chromosome chromosome = m_Population[i];
-            chromosomes.Add(new Chromosome(chromosome));
-        }
+            chromosomes.Add(m_Population[i].Clone() as Chromosome);
 
         return chromosomes;
     }
@@ -163,17 +166,19 @@ public class LevelGenerator : MonoBehaviour
     {
         if (string.IsNullOrEmpty(m_Filename)) return;
 
-        using (StreamWriter file = new StreamWriter($"{m_Filename}.xls", append))
+        Debug.Log($"{m_AvgFitness}\t{m_MaxFitness}");
+
+        using (StreamWriter file = new StreamWriter($"{ Application.dataPath }/../Save/{m_Filename}.xls", append))
         {
             m_AvgFitness = m_Population.Average(x => x.Fitness);
             m_MaxFitness = m_Population.Max(x => x.Fitness);
-            file.WriteLine($"{m_AvgFitness}\t{m_MaxFitness}");
+            file.WriteLine($"{m_AvgFitness.ToString(System.Globalization.CultureInfo.CurrentCulture)}\t{m_MaxFitness.ToString(System.Globalization.CultureInfo.CurrentCulture)}");
         }
     }
 
     public void NextGeneration()
     {
-        Save(m_Generation > 0);
+        Save(m_Generation > 1);
 
         var newPopulation = Elitism();
         while (newPopulation.Count < m_PopulationSize)
@@ -183,13 +188,17 @@ public class LevelGenerator : MonoBehaviour
 
             int cutoff = Helper.RandomInt(1, m_ChromosomeLength - 1);
 
-            Chromosome child1 = parent1.Crossover(parent2, cutoff).Mutate(m_MutateRate);
-            newPopulation.Add(child1);
+            Chromosome child1 = parent1.Crossover(parent2, cutoff);
+            child1.Mutate(m_MutateRate);
+
+            if (!newPopulation.Contains(child1)) newPopulation.Add(child1);
 
             if (newPopulation.Count < m_PopulationSize)
             {
-                Chromosome child2 = parent2.Crossover(parent1, cutoff).Mutate(m_MutateRate);
-                newPopulation.Add(child2);
+                Chromosome child2 = parent2.Crossover(parent1, cutoff);
+                child2.Mutate(m_MutateRate);
+
+                if (!newPopulation.Contains(child2)) newPopulation.Add(child2);
             }
         }
 
