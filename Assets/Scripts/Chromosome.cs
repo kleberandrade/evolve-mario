@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 public class Chromosome : ICloneable, IComparable<Chromosome>
 {
@@ -64,5 +65,12 @@ public class Chromosome : ICloneable, IComparable<Chromosome>
             return 1;
         else
             return 0;
+    }
+
+    public override string ToString()
+    {
+        StringBuilder builder = new StringBuilder();
+        m_Genes.ForEach(gene => builder.Append((char)(65 + gene)));
+        return builder.ToString();
     }
 }
