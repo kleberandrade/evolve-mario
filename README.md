@@ -1,3 +1,42 @@
+# Evolve Mario
+
+![Engine: Unity](https://img.shields.io/badge/Engine-Unity-555555)
+![Language: C#](https://img.shields.io/badge/Language-C%23-512BD4)
+[![Recorded Unity: 2020.1.17f1](https://img.shields.io/badge/Recorded%20Unity-2020.1.17f1-555555)](https://github.com/kleberandrade/evolve-mario/blob/main/ProjectSettings/ProjectVersion.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-555555)](https://github.com/kleberandrade/evolve-mario/blob/main/LICENSE)
+
+Unity example exploring genetic algorithms for platform-game level generation.
+
+## Getting started
+
+- Clone the repository and add `.` to Unity Hub as an existing project.
+
+- Use the recorded Editor version as the starting point. For an upgrade, work on a separate branch and preserve all `.meta` files and serialized asset references.
+
+- Open a project scene in the Editor and enter Play mode. Available scene examples: [Assets/Scenes/Demo.unity](https://github.com/kleberandrade/evolve-mario/blob/main/Assets/Scenes/Demo.unity), [Assets/Scenes/Prefab.unity](https://github.com/kleberandrade/evolve-mario/blob/main/Assets/Scenes/Prefab.unity).
+
+## Recorded requirements
+
+- Recorded Unity Editor: **2020.1.17f1** in [ProjectSettings/ProjectVersion.txt](https://github.com/kleberandrade/evolve-mario/blob/main/ProjectSettings/ProjectVersion.txt).
+
+## Repository map
+
+- [Assets](https://github.com/kleberandrade/evolve-mario/tree/main/Assets)
+- [ProjectSettings](https://github.com/kleberandrade/evolve-mario/tree/main/ProjectSettings)
+- [Packages](https://github.com/kleberandrade/evolve-mario/tree/main/Packages)
+
+## Validation status
+
+This update documents the tracked source and project metadata. It does not certify a successful build, device test or compatibility with a current toolchain. Follow any project-specific validation instructions in the original material.
+
+## License and attribution
+
+See [LICENSE](https://github.com/kleberandrade/evolve-mario/blob/main/LICENSE) and any notices accompanying third-party code and assets. This documentation update does not change licensing or authorship.
+
+---
+
+## Original project material
+
 # Level Generator for Mario Game using Genetic Algorithm
 
 Example of application of genetic algorithm for Super Mario Bross Level Generator. Project developed in the course of Artificial Intelligence applied to the Digital Games - Fatec Americana.
